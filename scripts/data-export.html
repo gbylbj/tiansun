@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表单数据导出工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <div class="max-w-4xl mx-auto pt-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">📊 表单数据导出工具</h1>
+            <p class="text-white/90">管理和导出提交的表单数据</p>
+        </div>
+
+        <div class="glass-effect rounded-xl shadow-xl p-6">
+            <!-- 操作按钮 -->
+            <div class="flex flex-wrap gap-3 mb-6">
+                <button onclick="loadData()"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                    🔄 加载数据
+                </button>
+                <button onclick="exportToJson()"
+                        class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                    📄 导出JSON
+                </button>
+                <button onclick="exportToCSV()"
+                        class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors">
+                    📊 导出CSV
+                </button>
+                <button onclick="clearAllData()"
+                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                    🗑️ 清空数据
+                </button>
+            </div>
+
+            <!-- 统计信息 -->
+            <div id="stats" class="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 class="font-semibold mb-2">📈 数据统计</h3>
+                <div id="statsContent">暂无数据</div>
+            </div>
+
+            <!-- 数据表格 -->
+            <div id="dataContainer" class="overflow-x-auto">
+                <div class="text-center text-gray-500 py-8">
+                    <p>点击"加载数据"按钮查看提交的表单记录</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let submissions = [];
+
+        // 加载数据
+        function loadData() {
+            try {
+                const rawData = localStorage.getItem('contactSubmissions');
+                submissions = JSON.parse(rawData || '[]');
+
+                updateStats();
+                displayData();
+                showMessage('✅ 数据加载成功', 'success');
+            } catch (error) {
+                showMessage('❌ 数据加载失败: ' + error.message, 'error');
+            }
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            const statsContent = document.getElementById('statsContent');
+            const total = submissions.length;
+            const today = new Date().toLocaleDateString('zh-CN');
+            const todaySubmissions = submissions.filter(s =>
+                s.timestamp.startsWith(today)
+            ).length;
+
+            statsContent.innerHTML = `
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600">${total}</div>
+                        <div class="text-sm text-gray-600">总提交数</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600">${todaySubmissions}</div>
+                        <div class="text-sm text-gray-600">今日提交</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600">${total - todaySubmissions}</div>
+                        <div class="text-sm text-gray-600">历史提交</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 显示数据表格
+        function displayData() {
+            const container = document.getElementById('dataContainer');
+
+            if (submissions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <p>暂无提交记录</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const tableHtml = `
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-300 p-2 text-left">ID</th>
+                            <th class="border border-gray-300 p-2 text-left">姓名</th>
+                            <th class="border border-gray-300 p-2 text-left">手机</th>
+                            <th class="border border-gray-300 p-2 text-left">邮箱</th>
+                            <th class="border border-gray-300 p-2 text-left">留言内容</th>
+                            <th class="border border-gray-300 p-2 text-left">提交时间</th>
+                            <th class="border border-gray-300 p-2 text-left">状态</th>
+                            <th class="border border-gray-300 p-2 text-left">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${submissions.map((sub, index) => `
+                            <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                                <td class="border border-gray-300 p-2">${sub.id}</td>
+                                <td class="border border-gray-300 p-2">${sub.name}</td>
+                                <td class="border border-gray-300 p-2">${sub.phone}</td>
+                                <td class="border border-gray-300 p-2">${sub.email || '-'}</td>
+                                <td class="border border-gray-300 p-2 max-w-xs">
+                                    <div class="truncate" title="${sub.message}">
+                                        ${sub.message.substring(0, 50)}${sub.message.length > 50 ? '...' : ''}
+                                    </div>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-sm">${sub.timestamp}</td>
+                                <td class="border border-gray-300 p-2">
+                                    <span class="px-2 py-1 rounded text-xs ${
+                                        sub.status === 'success' ? 'bg-green-100 text-green-800' :
+                                        sub.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                        'bg-gray-100 text-gray-800'
+                                    }">
+                                        ${sub.status === 'success' ? '成功' :
+                                          sub.status === 'pending' ? '待处理' : sub.status}
+                                    </span>
+                                </td>
+                                <td class="border border-gray-300 p-2">
+                                    <button onclick="deleteRecord(${sub.id})"
+                                            class="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600">
+                                        删除
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHtml;
+        }
+
+        // 导出为JSON
+        function exportToJson() {
+            if (submissions.length === 0) {
+                showMessage('❌ 没有数据可导出', 'error');
+                return;
+            }
+
+            const dataStr = JSON.stringify(submissions, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+            const exportFileDefaultName = `contact_submissions_${new Date().toISOString().split('T')[0]}.json`;
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+
+            showMessage('✅ JSON文件导出成功', 'success');
+        }
+
+        // 导出为CSV
+        function exportToCSV() {
+            if (submissions.length === 0) {
+                showMessage('❌ 没有数据可导出', 'error');
+                return;
+            }
+
+            const headers = ['ID', '姓名', '手机', '邮箱', '留言内容', '提交时间', '状态'];
+            const csvContent = [
+                headers.join(','),
+                ...submissions.map(sub => [
+                    sub.id,
+                    sub.name,
+                    sub.phone,
+                    sub.email || '',
+                    `"${sub.message.replace(/"/g, '""')}"`, // 转义双引号
+                    sub.timestamp,
+                    sub.status
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `contact_submissions_${new Date().toISOString().split('T')[0]}.csv`);
+            link.click();
+
+            showMessage('✅ CSV文件导出成功', 'success');
+        }
+
+        // 删除记录
+        function deleteRecord(id) {
+            if (confirm('确定要删除这条记录吗？')) {
+                submissions = submissions.filter(sub => sub.id !== id);
+                localStorage.setItem('contactSubmissions', JSON.stringify(submissions));
+                displayData();
+                updateStats();
+                showMessage('✅ 记录已删除', 'success');
+            }
+        }
+
+        // 清空所有数据
+        function clearAllData() {
+            if (confirm('确定要清空所有数据吗？此操作不可恢复！')) {
+                localStorage.removeItem('contactSubmissions');
+                submissions = [];
+                displayData();
+                updateStats();
+                showMessage('✅ 所有数据已清空', 'success');
+            }
+        }
+
+        // 显示消息
+        function showMessage(message, type = 'info') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            messageDiv.textContent = message;
+            document.body.appendChild(messageDiv);
+
+            setTimeout(() => {
+                document.body.removeChild(messageDiv);
+            }, 3000);
+        }
+
+        // 页面加载时自动加载数据
+        window.addEventListener('load', loadData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飞书配置助手 - 港埠雨林</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        .code-block {
+            background: #1f2937;
+            color: #10b981;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #374151;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <div class="max-w-4xl mx-auto pt-8">
+        <!-- 标题 -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-4">🛠️ 飞书配置助手</h1>
+            <p class="text-white/90 text-lg">一步一步帮您完成飞书应用配置</p>
+        </div>
+
+        <!-- 步骤导航 -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="step-number bg-green-500">1</div>
+                    <div>
+                        <h3 class="font-semibold">创建飞书应用</h3>
+                        <p class="text-sm text-gray-600">在开发者后台创建应用</p>
+                    </div>
+                </div>
+                <div class="text-gray-400">→</div>
+                <div class="flex items-center gap-4">
+                    <div class="step-number bg-blue-500">2</div>
+                    <div>
+                        <h3 class="font-semibold">配置权限</h3>
+                        <p class="text-sm text-gray-600">添加多维表格权限</p>
+                    </div>
+                </div>
+                <div class="text-gray-400">→</div>
+                <div class="flex items-center gap-4">
+                    <div class="step-number bg-purple-500">3</div>
+                    <div>
+                        <h3 class="font-semibold">创建表格</h3>
+                        <p class="text-sm text-gray-600">设计多维表格结构</p>
+                    </div>
+                </div>
+                <div class="text-gray-400">→</div>
+                <div class="flex items-center gap-4">
+                    <div class="step-number bg-orange-500">4</div>
+                    <div>
+                        <h3 class="font-semibold">获取配置</h3>
+                        <p class="text-sm text-gray-600">复制配置到管理后台</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第一步：创建应用 -->
+        <div class="glass-effect rounded-xl p-8 mb-6">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="step-number bg-green-500 text-lg w-12 h-12">1</div>
+                <h2 class="text-2xl font-bold text-gray-800">创建飞书应用</h2>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                    <h3 class="font-semibold mb-2">操作步骤：</h3>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                        <li>点击下方按钮访问飞书开发者后台</li>
+                        <li>使用飞书账号登录</li>
+                        <li>点击"创建企业自建应用"</li>
+                        <li>填写应用信息：
+                            <ul class="list-disc list-inside ml-6 mt-2">
+                                <li>应用名称：<strong>港埠雨林留言收集</strong></li>
+                                <li>应用描述：<strong>收集官网客户留言信息</strong></li>
+                                <li>应用图标：选择合适图标</li>
+                            </ul>
+                        </li>
+                        <li>创建成功后进入应用详情页</li>
+                    </ol>
+                </div>
+
+                <div class="text-center">
+                    <a href="https://open.feishu.cn/app" target="_blank"
+                       class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors inline-flex items-center gap-2">
+                        <i class="fas fa-external-link-alt"></i>
+                        访问飞书开发者后台
+                    </a>
+                </div>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                    <h3 class="font-semibold mb-2">📋 需要获取的信息：</h3>
+                    <p>在"凭证与基础信息"页面找到并记录：</p>
+                    <ul class="list-disc list-inside ml-6 mt-2">
+                        <li><strong>App ID</strong>（格式：cli_xxxxxxxxxxxxxxxx）</li>
+                        <li><strong>App Secret</strong>（点击显示按钮获取）</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二步：配置权限 -->
+        <div class="glass-effect rounded-xl p-8 mb-6">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="step-number bg-blue-500 text-lg w-12 h-12">2</div>
+                <h2 class="text-2xl font-bold text-gray-800">配置应用权限</h2>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                    <h3 class="font-semibold mb-2">添加权限范围：</h3>
+                    <p>在应用详情页，进入"权限管理"，添加以下权限：</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div class="bg-white p-4 rounded-lg border">
+                            <code class="text-sm">bitable:app</code>
+                            <p class="text-sm text-gray-600 mt-1">多维表格应用权限</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border">
+                            <code class="text-sm">bitable:app:readonly</code>
+                            <p class="text-sm text-gray-600 mt-1">多维表格只读权限</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border">
+                            <code class="text-sm">bitable:app:write</code>
+                            <p class="text-sm text-gray-600 mt-1">多维表格写入权限</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-green-50 border-l-4 border-green-500 p-4">
+                    <h3 class="font-semibold mb-2">申请发布：</h3>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                        <li>在"版本管理与发布"页面创建版本</li>
+                        <li>填写版本信息并提交审核</li>
+                        <li>等待审核通过（通常很快）</li>
+                        <li>发布版本后权限才能生效</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三步：创建多维表格 -->
+        <div class="glass-effect rounded-xl p-8 mb-6">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="step-number bg-purple-500 text-lg w-12 h-12">3</div>
+                <h2 class="text-2xl font-bold text-gray-800">创建多维表格</h2>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                    <h3 class="font-semibold mb-2">表格设计：</h3>
+                    <p>在飞书中创建多维表格，包含以下字段：</p>
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full border-collapse border border-gray-300">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="border border-gray-300 p-2 text-left">字段名称</th>
+                                    <th class="border border-gray-300 p-2 text-left">字段类型</th>
+                                    <th class="border border-gray-300 p-2 text-left">说明</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border border-gray-300 p-2">姓名</td>
+                                    <td class="border border-gray-300 p-2">单行文本</td>
+                                    <td class="border border-gray-300 p-2">客户姓名</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 p-2">手机号</td>
+                                    <td class="border border-gray-300 p-2">单行文本</td>
+                                    <td class="border border-gray-300 p-2">联系电话</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 p-2">邮箱</td>
+                                    <td class="border border-gray-300 p-2">单行文本</td>
+                                    <td class="border border-gray-300 p-2">邮箱地址（可选）</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 p-2">留言内容</td>
+                                    <td class="border border-gray-300 p-2">多行文本</td>
+                                    <td class="border border-gray-300 p-2">客户留言</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 p-2">提交时间</td>
+                                    <td class="border border-gray-300 p-2">日期时间</td>
+                                    <td class="border border-gray-300 p-2">自动记录时间</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 p-2">状态</td>
+                                    <td class="border border-gray-300 p-2">单选</td>
+                                    <td class="border border-gray-300 p-2">待处理/已处理/已联系</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 p-2">来源</td>
+                                    <td class="border border-gray-300 p-2">单行文本</td>
+                                    <td class="border border-gray-300 p-2">官网表单</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <a href="https://feishu.cn" target="_blank"
+                       class="bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-colors inline-flex items-center gap-2">
+                        <i class="fas fa-table"></i>
+                        前往创建多维表格
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第四步：获取配置信息 -->
+        <div class="glass-effect rounded-xl p-8 mb-6">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="step-number bg-orange-500 text-lg w-12 h-12">4</div>
+                <h2 class="text-2xl font-bold text-gray-800">获取配置信息</h2>
+            </div>
+
+            <div class="space-y-6">
+                <!-- 表格链接 -->
+                <div>
+                    <h3 class="font-semibold mb-2">📊 多维表格链接</h3>
+                    <p class="text-sm text-gray-600 mb-2">在飞书多维表格页面，复制浏览器地址栏中的URL：</p>
+                    <div class="code-block">
+                        https://xxxxxxxx.feishu.cn/base/bascnxxxxxxxxxxxxxxx?table=tblxxxxxxxxxxxxxxx&view=vewxxxxxxxxxxxxxxx
+                        <button class="copy-btn" onclick="copyToClipboard('https://xxxxxxxx.feishu.cn/base/bascnxxxxxxxxxxxxxxx')">复制示例</button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">⚠️ 实际使用时请替换为您的真实表格链接</p>
+                </div>
+
+                <!-- 获取表格ID的JavaScript代码 -->
+                <div>
+                    <h3 class="font-semibold mb-2">🔍 获取表格ID和视图ID</h3>
+                    <p class="text-sm text-gray-600 mb-2">在飞书多维表格页面，按F12打开开发者工具，在Console中执行以下代码：</p>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyToClipboard(`// 获取AppToken
+const appToken = window.location.pathname.match(/base\\/([^\\?]+)/)?.[1];
+console.log('App Token:', appToken);
+
+// 获取Table ID
+const tableId = document.querySelector('[data-table-id]')?.getAttribute('data-table-id');
+console.log('Table ID:', tableId);
+
+// 获取View ID
+const viewId = document.querySelector('[data-view-id]')?.getAttribute('data-view-id');
+console.log('View ID:', viewId);
+
+// 一键复制所有ID
+console.log('\\n=== 复制以下配置 ===');
+console.log('App Token:', appToken);
+console.log('Table ID:', tableId);
+console.log('View ID:', viewId);`)">复制代码</button>
+                        <pre class="text-green-400">// 获取AppToken
+const appToken = window.location.pathname.match(/base\\/([^\\?]+)/)?.[1];
+console.log('App Token:', appToken);
+
+// 获取Table ID
+const tableId = document.querySelector('[data-table-id]')?.getAttribute('data-table-id');
+console.log('Table ID:', tableId);
+
+// 获取View ID
+const viewId = document.querySelector('[data-view-id]')?.getAttribute('data-view-id');
+console.log('View ID:', viewId);
+
+// 一键复制所有ID
+console.log('\\n=== 复制以下配置 ===');
+console.log('App Token:', appToken);
+console.log('Table ID:', tableId);
+console.log('View ID:', viewId);</pre>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">💡 提示：执行代码后会自动显示所需的ID信息</p>
+                </div>
+
+                <!-- 配置汇总 -->
+                <div class="bg-gray-50 border-l-4 border-gray-500 p-4">
+                    <h3 class="font-semibold mb-3">📋 配置信息汇总：</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium">应用ID：</span>
+                            <code class="bg-white px-2 py-1 rounded text-sm">cli_xxxxxxxxxxxxxxxx</code>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium">应用密钥：</span>
+                            <code class="bg-white px-2 py-1 rounded text-sm">xxxxxxxx-xxxx-xxxx-xxxx</code>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium">表格链接：</span>
+                            <code class="bg-white px-2 py-1 rounded text-sm text-xs">https://xxx.feishu.cn/base/xxx</code>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium">表格ID：</span>
+                            <code class="bg-white px-2 py-1 rounded text-sm">tblxxxxxxxxxxxxxxx</code>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium">视图ID：</span>
+                            <code class="bg-white px-2 py-1 rounded text-sm">vewxxxxxxxxxxxxxxx</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 下一步操作 -->
+                <div class="text-center mt-8">
+                    <a href="feishu-admin-dashboard.html" target="_blank"
+                       class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors inline-flex items-center gap-2">
+                        <i class="fas fa-cog"></i>
+                        打开管理后台配置
+                    </a>
+                    <p class="text-sm text-gray-600 mt-2">将获取的配置信息填入管理后台</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 常见问题 -->
+        <div class="glass-effect rounded-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">❓ 常见问题</h2>
+
+            <div class="space-y-4">
+                <details class="border-l-4 border-blue-500 pl-4">
+                    <summary class="font-semibold cursor-pointer">如何找到App ID和App Secret？</summary>
+                    <div class="mt-2 text-gray-700">
+                        <p>1. 在飞书开发者后台进入应用详情页</p>
+                        <p>2. 点击左侧菜单的"凭证与基础信息"</p>
+                        <p>3. App ID直接显示，App Secret需要点击"显示"按钮</p>
+                    </div>
+                </details>
+
+                <details class="border-l-4 border-blue-500 pl-4">
+                    <summary class="font-semibold cursor-pointer">获取表格ID时找不到元素怎么办？</summary>
+                    <div class="mt-2 text-gray-700">
+                        <p>尝试以下方法：</p>
+                        <p>1. 确保在多维表格页面（不是工作台）</p>
+                        <p>2. 刷新页面后重新执行代码</p>
+                        <p>3. 检查表格是否有编辑权限</p>
+                        <p>4. 可以从URL中提取：base/后面的字符串是appToken</p>
+                    </div>
+                </details>
+
+                <details class="border-l-4 border-blue-500 pl-4">
+                    <summary class="font-semibold cursor-pointer">权限申请需要多长时间？</summary>
+                    <div class="mt-2 text-gray-700">
+                        <p>通常情况下：</p>
+                        <p>• 个人应用：几分钟内通过</p>
+                        <p>• 企业应用：可能需要1-2个工作日</p>
+                        <p>• 可以在应用后台查看审核状态</p>
+                    </div>
+                </details>
+
+                <details class="border-l-4 border-blue-500 pl-4">
+                    <summary class="font-semibold cursor-pointer">配置完成后如何测试？</summary>
+                    <div class="mt-2 text-gray-700">
+                        <p>1. 打开管理后台，在"飞书配置"页面填入信息</p>
+                        <p>2. 点击"测试配置"按钮</p>
+                        <p>3. 如果显示连接成功，即可开始使用</p>
+                        <p>4. 可以先提交一条测试数据验证</p>
+                    </div>
+                </details>
+            </div>
+
+            <!-- 联系支持 -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mt-6">
+                <h3 class="font-semibold mb-2">💬 需要帮助？</h3>
+                <p>如果在配置过程中遇到问题，可以：</p>
+                <ul class="list-disc list-inside ml-6 mt-2">
+                    <li>查看管理后台的"帮助文档"页面</li>
+                    <li>检查浏览器控制台的错误信息</li>
+                    <li>确认所有配置参数都正确填写</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // 创建提示
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                toast.textContent = '✅ 已复制到剪贴板';
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

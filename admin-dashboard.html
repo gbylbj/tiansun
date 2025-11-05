@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 港埠雨林留言管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <div class="max-w-6xl mx-auto">
+        <!-- 标题 -->
+        <div class="text-center mb-8 pt-8">
+            <h1 class="text-4xl font-bold text-white mb-4">🔧 管理后台</h1>
+            <p class="text-white/90 text-lg">港埠雨林客户留言管理系统</p>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass-effect rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold text-blue-600" id="totalCount">0</div>
+                <div class="text-gray-600 font-medium">总留言数</div>
+            </div>
+            <div class="glass-effect rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold text-green-600" id="todayCount">0</div>
+                <div class="text-gray-600 font-medium">今日留言</div>
+            </div>
+            <div class="glass-effect rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold text-purple-600" id="weekCount">0</div>
+                <div class="text-gray-600 font-medium">本周留言</div>
+            </div>
+            <div class="glass-effect rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold text-orange-600" id="monthCount">0</div>
+                <div class="text-gray-600 font-medium">本月留言</div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="glass-effect rounded-xl shadow-xl p-6 mb-6">
+            <div class="flex flex-wrap gap-4">
+                <button onclick="refreshData()"
+                        class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors font-medium">
+                    🔄 刷新数据
+                </button>
+                <button onclick="exportAllData()"
+                        class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors font-medium">
+                    📥 导出全部数据
+                </button>
+                <button onclick="exportTodayData()"
+                        class="bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-colors font-medium">
+                    📅 导出今日数据
+                </button>
+                <button onclick="clearAllData()"
+                        class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors font-medium">
+                    🗑️ 清空所有数据
+                </button>
+            </div>
+        </div>
+
+        <!-- 数据列表 -->
+        <div class="glass-effect rounded-xl shadow-xl p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-6">📋 客户留言记录</h3>
+            <div id="recordsList" class="space-y-4 max-h-96 overflow-y-auto">
+                <p class="text-gray-500 text-center py-8">正在加载数据...</p>
+            </div>
+        </div>
+
+        <!-- 快速访问链接 -->
+        <div class="glass-effect rounded-xl shadow-xl p-6 mt-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">🔗 快速访问</h3>
+            <div class="flex flex-wrap gap-4">
+                <a href="customer-contact-form.html" target="_blank"
+                   class="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors">
+                    📝 客户留言表单
+                </a>
+                <a href="http://localhost:3002" target="_blank"
+                   class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                    🌐 官方网站
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取所有留言数据
+        function getAllSubmissions() {
+            return JSON.parse(localStorage.getItem('contactSubmissions') || '[]');
+        }
+
+        // 计算统计数据
+        function calculateStats() {
+            const submissions = getAllSubmissions();
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+            const todayCount = submissions.filter(item => {
+                const itemDate = new Date(item.timestamp.replace(/\//g, '-'));
+                return itemDate >= today;
+            }).length;
+
+            const weekCount = submissions.filter(item => {
+                const itemDate = new Date(item.timestamp.replace(/\//g, '-'));
+                return itemDate >= weekAgo;
+            }).length;
+
+            const monthCount = submissions.filter(item => {
+                const itemDate = new Date(item.timestamp.replace(/\//g, '-'));
+                return itemDate >= monthAgo;
+            }).length;
+
+            document.getElementById('totalCount').textContent = submissions.length;
+            document.getElementById('todayCount').textContent = todayCount;
+            document.getElementById('weekCount').textContent = weekCount;
+            document.getElementById('monthCount').textContent = monthCount;
+
+            return {
+                total: submissions.length,
+                today: todayCount,
+                week: weekCount,
+                month: monthCount
+            };
+        }
+
+        // 显示留言记录
+        function displayRecords() {
+            const submissions = getAllSubmissions();
+            const recordsList = document.getElementById('recordsList');
+
+            if (submissions.length === 0) {
+                recordsList.innerHTML = '<p class="text-gray-500 text-center py-8">暂无留言记录</p>';
+                return;
+            }
+
+            // 按时间倒序显示（最新的在前面）
+            const sortedSubmissions = submissions.slice().reverse();
+
+            let html = '';
+            sortedSubmissions.forEach((item, index) => {
+                const actualIndex = submissions.length - index;
+                const statusBadge = item.status === 'pending'
+                    ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">待处理</span>'
+                    : '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">已处理</span>';
+
+                html += `
+                    <div class="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex items-center gap-3">
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">#${actualIndex}</span>
+                                <span class="font-semibold text-gray-800">${item.name}</span>
+                                <span class="text-gray-600">${item.phone}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                ${statusBadge}
+                                <button onclick="deleteRecord(${item.id})"
+                                        class="text-red-500 hover:text-red-700 transition-colors"
+                                        title="删除记录">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-500 mb-2">
+                            🕒 ${item.timestamp}
+                        </div>
+                        <div class="text-gray-700 bg-gray-50 p-3 rounded">
+                            ${item.message}
+                        </div>
+                    </div>
+                `;
+            });
+
+            recordsList.innerHTML = html;
+        }
+
+        // 删除单条记录
+        function deleteRecord(id) {
+            if (confirm('确定要删除这条记录吗？')) {
+                const submissions = getAllSubmissions();
+                const filtered = submissions.filter(item => item.id !== id);
+                localStorage.setItem('contactSubmissions', JSON.stringify(filtered));
+                refreshData();
+            }
+        }
+
+        // 刷新数据
+        function refreshData() {
+            calculateStats();
+            displayRecords();
+        }
+
+        // 下载文件
+        function downloadFile(content, filename, mimeType = 'application/json') {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 导出全部数据
+        function exportAllData() {
+            const submissions = getAllSubmissions();
+            if (submissions.length === 0) {
+                alert('暂无数据可导出');
+                return;
+            }
+
+            const exportData = {
+                exportTime: new Date().toISOString(),
+                exportType: 'all',
+                totalCount: submissions.length,
+                statistics: calculateStats(),
+                submissions: submissions
+            };
+
+            const filename = `港埠雨林_全部客户留言_${new Date().toISOString().split('T')[0]}.json`;
+            downloadFile(JSON.stringify(exportData, null, 2), filename);
+
+            // 同时导出可读的文本格式
+            let textContent = `港埠雨林客户留言数据导出
+导出时间：${new Date().toLocaleString('zh-CN')}
+总留言数：${submissions.length}
+
+`;
+            submissions.slice().reverse().forEach((item, index) => {
+                const actualIndex = submissions.length - index;
+                textContent += `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+记录 #${actualIndex}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+姓名：${item.name}
+手机：${item.phone}
+时间：${item.timestamp}
+状态：${item.status}
+
+留言内容：
+${item.message}
+
+`;
+            });
+
+            const txtFilename = `港埠雨林_全部客户留言_${new Date().toISOString().split('T')[0]}.txt`;
+            downloadFile(textContent, txtFilename, 'text/plain');
+
+            alert(`✅ 已导出 ${submissions.length} 条留言记录\n文件格式：JSON 和 TXT`);
+        }
+
+        // 导出今日数据
+        function exportTodayData() {
+            const submissions = getAllSubmissions();
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+
+            const todaySubmissions = submissions.filter(item => {
+                const itemDate = new Date(item.timestamp.replace(/\//g, '-'));
+                return itemDate.toISOString().split('T')[0] === todayStr;
+            });
+
+            if (todaySubmissions.length === 0) {
+                alert('今日暂无留言数据');
+                return;
+            }
+
+            const exportData = {
+                exportTime: new Date().toISOString(),
+                exportType: 'today',
+                date: todayStr,
+                totalCount: todaySubmissions.length,
+                submissions: todaySubmissions
+            };
+
+            const filename = `港埠雨林_今日客户留言_${todayStr}.json`;
+            downloadFile(JSON.stringify(exportData, null, 2), filename);
+
+            alert(`✅ 已导出今日 ${todaySubmissions.length} 条留言记录`);
+        }
+
+        // 清空所有数据
+        function clearAllData() {
+            const count = getAllSubmissions().length;
+            if (count === 0) {
+                alert('暂无数据需要清空');
+                return;
+            }
+
+            if (confirm(`确定要清空所有 ${count} 条留言记录吗？\n此操作不可恢复！`)) {
+                localStorage.removeItem('contactSubmissions');
+                refreshData();
+                alert('✅ 所有数据已清空');
+            }
+        }
+
+        // 页面加载时初始化
+        window.addEventListener('load', function() {
+            refreshData();
+
+            // 每30秒自动刷新数据
+            setInterval(refreshData, 30000);
+        });
+    </script>
+</body>
+</html>

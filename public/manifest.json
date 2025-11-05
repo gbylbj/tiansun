@@ -1,0 +1,42 @@
+{
+  "short_name": "港埠雨林甜笋",
+  "name": "港埠雨林甜笋 - 可生食水果笋",
+  "description": "来自北纬21°西双版纳原产地的可生食水果笋，8年匠心培育，绿色食品A级认证",
+  "icons": [
+    {
+      "src": "/港埠雨林公司产品资料知识库/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/港埠雨林公司产品资料知识库/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#2E7D32",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "categories": ["food", "shopping", "lifestyle"],
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "scope": "/",
+  "shortcuts": [
+    {
+      "name": "购买产品",
+      "short_name": "购买",
+      "description": "浏览和购买港埠雨林甜笋产品",
+      "url": "/#products",
+      "icons": [{ "src": "/港埠雨林公司产品资料知识库/logo.jpg", "sizes": "96x96" }]
+    },
+    {
+      "name": "联系我们",
+      "short_name": "联系",
+      "description": "联系客服获取更多信息",
+      "url": "/#contact",
+      "icons": [{ "src": "/港埠雨林公司产品资料知识库/logo.jpg", "sizes": "96x96" }]
+    }
+  ]
+}

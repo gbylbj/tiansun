@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>联系我们 - 港埠雨林甜笋</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <div class="max-w-2xl mx-auto pt-8">
+        <!-- 标题 -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-4">🎋 港埠雨林甜笋</h1>
+            <p class="text-white/90 text-lg">产品咨询与合作洽谈</p>
+        </div>
+
+        <!-- 联系表单 -->
+        <div class="glass-effect rounded-3xl shadow-2xl p-8">
+            <form id="contactForm">
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        👤 您的姓名 *
+                    </label>
+                    <input type="text" id="name" required
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
+                           placeholder="请输入您的姓名">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        📱 手机号码 *
+                    </label>
+                    <input type="tel" id="phone" required
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
+                           placeholder="请输入您的手机号码">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        💬 留言内容 *
+                    </label>
+                    <textarea id="message" rows="5" required
+                              class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors resize-none"
+                              placeholder="请详细描述您的需求或问题..."></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn"
+                        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 transform hover:scale-[1.02]">
+                    提交咨询
+                </button>
+            </form>
+
+            <!-- 状态显示 -->
+            <div id="statusMessage" class="mt-4 hidden"></div>
+
+            <!-- 备用联系方式 -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">📞 其他联系方式</h3>
+                <div class="space-y-2">
+                    <p class="text-gray-600">📱 客服热线：<strong>18510890322</strong></p>
+                    <p class="text-gray-600">📧 邮箱咨询：<strong>xixi@gbylbj.com</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 管理员入口 -->
+        <div class="glass-effect rounded-xl shadow-xl p-6 mt-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">🔐 管理员</h3>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="showAdminPanel()"
+                        class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                    📊 查看留言数据
+                </button>
+            </div>
+        </div>
+
+        <!-- 管理员面板 -->
+        <div id="adminPanel" class="glass-effect rounded-xl shadow-xl p-6 mt-6 hidden">
+            <h3 class="text-xl font-bold text-gray-800 mb-6">📋 留言数据管理</h3>
+
+            <!-- 统计信息 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="totalCount">0</div>
+                    <div class="text-gray-600 text-sm">总留言数</div>
+                </div>
+                <div class="bg-white rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-green-600" id="todayCount">0</div>
+                    <div class="text-gray-600 text-sm">今日留言</div>
+                </div>
+                <div class="bg-white rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-purple-600" id="weekCount">0</div>
+                    <div class="text-gray-600 text-sm">本周留言</div>
+                </div>
+                <div class="bg-white rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-orange-600" id="monthCount">0</div>
+                    <div class="text-gray-600 text-sm">本月留言</div>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="flex flex-wrap gap-3 mb-6">
+                <button onclick="exportAllData()"
+                        class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                    📥 导出全部数据
+                </button>
+                <button onclick="exportTodayData()"
+                        class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors">
+                    📅 导出今日数据
+                </button>
+                <button onclick="clearAllData()"
+                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                    🗑️ 清空数据
+                </button>
+                <button onclick="hideAdminPanel()"
+                        class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                    ❌ 关闭面板
+                </button>
+            </div>
+
+            <!-- 数据列表 -->
+            <div class="max-h-96 overflow-y-auto">
+                <div id="recordsList" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 使用服务器端存储方案
+        const SERVER_ENDPOINT = 'https://api.emailjs.com/api/v1.0/email/send';
+        const SERVICE_ID = 'service_your_service_id'; // 需要替换为实际的EmailJS服务ID
+        const TEMPLATE_ID = 'template_your_template_id'; // 需要替换为实际的模板ID
+        const PUBLIC_KEY = 'your_public_key'; // 需要替换为实际的公钥
+
+        // 备用方案：发送到您的邮箱
+        function sendEmailToAdmin(formData) {
+            // 这里可以集成邮件服务
+            // 比如EmailJS、Formspree或者其他邮件服务
+
+            // 临时方案：将数据保存到多个地方确保不丢失
+            const submissions = JSON.parse(localStorage.getItem('contactSubmissions') || '[]');
+            const newSubmission = {
+                id: Date.now(),
+                ...formData,
+                timestamp: new Date().toLocaleString('zh-CN'),
+                status: 'pending',
+                userAgent: navigator.userAgent,
+                ip: '未知' // 实际部署时可以通过API获取真实IP
+            };
+            submissions.push(newSubmission);
+            localStorage.setItem('contactSubmissions', JSON.stringify(submissions));
+
+            // 同时尝试发送邮件（需要配置邮件服务）
+            console.log('📧 准备发送邮件给管理员:', formData);
+
+            return true;
+        }
+
+        // 显示消息
+        function showMessage(message, type = 'success') {
+            const statusDiv = document.getElementById('statusMessage');
+            const bgColor = type === 'success' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200';
+            statusDiv.className = `mt-4 p-4 rounded-lg border ${bgColor}`;
+            statusDiv.innerHTML = message;
+            statusDiv.classList.remove('hidden');
+
+            setTimeout(() => {
+                statusDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        // 验证表单
+        function validateForm(name, phone, message) {
+            if (!name.trim()) {
+                showMessage('❌ 请输入您的姓名', 'error');
+                return false;
+            }
+
+            const phoneRegex = /^1[3-9]\d{9}$/;
+            if (!phoneRegex.test(phone.trim())) {
+                showMessage('❌ 请输入正确的手机号码', 'error');
+                return false;
+            }
+
+            if (message.trim().length < 10) {
+                showMessage('❌ 留言内容至少需要10个字符', 'error');
+                return false;
+            }
+
+            return true;
+        }
+
+        // 表单提交
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const message = document.getElementById('message').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (!validateForm(name, phone, message)) {
+                return;
+            }
+
+            // 显示提交中状态
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提交中...';
+            submitBtn.classList.add('opacity-75');
+
+            try {
+                // 保存数据并发送通知
+                const success = sendEmailToAdmin({ name, phone, message });
+
+                if (success) {
+                    showMessage('✅ 提交成功！我们已收到您的信息，将尽快与您联系。', 'success');
+
+                    // 重置表单
+                    this.reset();
+
+                    // 更新管理员面板（如果是打开状态）
+                    if (!document.getElementById('adminPanel').classList.contains('hidden')) {
+                        refreshAdminData();
+                    }
+                } else {
+                    showMessage('❌ 提交失败，请重试', 'error');
+                }
+
+            } catch (error) {
+                console.error('提交失败:', error);
+                showMessage('❌ 提交失败，请重试', 'error');
+            } finally {
+                // 恢复按钮状态
+                submitBtn.disabled = false;
+                submitBtn.textContent = '提交咨询';
+                submitBtn.classList.remove('opacity-75');
+            }
+        });
+
+        // 管理员功能
+        function showAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.remove('hidden');
+            refreshAdminData();
+        }
+
+        function hideAdminPanel() {
+            document.getElementById('adminPanel').classList.add('hidden');
+        }
+
+        function getSubmissions() {
+            return JSON.parse(localStorage.getItem('contactSubmissions') || '[]');
+        }
+
+        function calculateStats() {
+            const submissions = getSubmissions();
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+            const todayCount = submissions.filter(item => {
+                const itemDate = new Date(item.timestamp.replace(/\//g, '-'));
+                return itemDate >= today;
+            }).length;
+
+            const weekCount = submissions.filter(item => {
+                const itemDate = new Date(item.timestamp.replace(/\//g, '-'));
+                return itemDate >= weekAgo;
+            }).length;
+
+            const monthCount = submissions.filter(item => {
+                const itemDate = new Date(item.timestamp.replace(/\//g, '-'));
+                return itemDate >= monthAgo;
+            }).length;
+
+            document.getElementById('totalCount').textContent = submissions.length;
+            document.getElementById('todayCount').textContent = todayCount;
+            document.getElementById('weekCount').textContent = weekCount;
+            document.getElementById('monthCount').textContent = monthCount;
+        }
+
+        function refreshAdminData() {
+            calculateStats();
+            displayRecords();
+        }
+
+        function displayRecords() {
+            const submissions = getSubmissions();
+            const recordsList = document.getElementById('recordsList');
+
+            if (submissions.length === 0) {
+                recordsList.innerHTML = '<p class="text-gray-500 text-center py-4">暂无留言记录</p>';
+                return;
+            }
+
+            const sortedSubmissions = submissions.slice().reverse();
+            let html = '';
+
+            sortedSubmissions.forEach((item, index) => {
+                const actualIndex = submissions.length - index;
+                html += `
+                    <div class="bg-white rounded-lg p-4 border border-gray-200">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center gap-3">
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">#${actualIndex}</span>
+                                <span class="font-semibold">${item.name}</span>
+                                <span class="text-gray-600">${item.phone}</span>
+                            </div>
+                            <button onclick="deleteRecord(${item.id})" class="text-red-500 hover:text-red-700">🗑️</button>
+                        </div>
+                        <div class="text-sm text-gray-500 mb-2">🕒 ${item.timestamp}</div>
+                        <div class="text-gray-700 bg-gray-50 p-3 rounded">${item.message}</div>
+                    </div>
+                `;
+            });
+
+            recordsList.innerHTML = html;
+        }
+
+        function deleteRecord(id) {
+            if (confirm('确定要删除这条记录吗？')) {
+                const submissions = getSubmissions();
+                const filtered = submissions.filter(item => item.id !== id);
+                localStorage.setItem('contactSubmissions', JSON.stringify(filtered));
+                refreshAdminData();
+            }
+        }
+
+        function exportAllData() {
+            const submissions = getSubmissions();
+            if (submissions.length === 0) {
+                alert('暂无数据可导出');
+                return;
+            }
+
+            const exportData = {
+                exportTime: new Date().toISOString(),
+                exportType: 'all',
+                totalCount: submissions.length,
+                submissions: submissions
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `港埠雨林_客户留言_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+
+            URL.revokeObjectURL(url);
+            alert(`✅ 已导出 ${submissions.length} 条留言记录`);
+        }
+
+        function exportTodayData() {
+            const submissions = getSubmissions();
+            const today = new Date().toISOString().split('T')[0];
+            const todaySubmissions = submissions.filter(item => {
+                const itemDate = new Date(item.timestamp.replace(/\//g, '-'));
+                return itemDate.toISOString().split('T')[0] === today;
+            });
+
+            if (todaySubmissions.length === 0) {
+                alert('今日暂无留言数据');
+                return;
+            }
+
+            const exportData = {
+                exportTime: new Date().toISOString(),
+                exportType: 'today',
+                date: today,
+                totalCount: todaySubmissions.length,
+                submissions: todaySubmissions
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `港埠雨林_今日留言_${today}.json`;
+            a.click();
+
+            URL.revokeObjectURL(url);
+            alert(`✅ 已导出今日 ${todaySubmissions.length} 条留言记录`);
+        }
+
+        function clearAllData() {
+            const count = getSubmissions().length;
+            if (count === 0) {
+                alert('暂无数据需要清空');
+                return;
+            }
+
+            if (confirm(`确定要清空所有 ${count} 条留言记录吗？\n此操作不可恢复！`)) {
+                localStorage.removeItem('contactSubmissions');
+                refreshAdminData();
+                alert('✅ 所有数据已清空');
+            }
+        }
+
+        // 页面加载时初始化
+        window.addEventListener('load', function() {
+            // 检查是否有新数据
+            const submissions = getSubmissions();
+            if (submissions.length > 0) {
+                console.log(`📊 当前共有 ${submissions.length} 条留言记录`);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飞书集成管理后台 - 港埠雨林</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .sidebar-item {
+            transition: all 0.3s ease;
+        }
+        .sidebar-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 4px solid #6366f1;
+            padding-left: 20px;
+        }
+        .status-indicator {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .form-input:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="flex h-screen">
+        <!-- 侧边栏 -->
+        <div class="w-64 glass-effect shadow-xl">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-cube text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">管理后台</h1>
+                        <p class="text-xs text-gray-600">飞书集成控制台</p>
+                    </div>
+                </div>
+
+                <nav class="space-y-2">
+                    <a href="#" onclick="showSection('dashboard')" class="sidebar-item block p-3 rounded-lg text-gray-700 hover:text-indigo-600">
+                        <i class="fas fa-tachometer-alt w-5 mr-3"></i>
+                        仪表板
+                    </a>
+                    <a href="#" onclick="showSection('config')" class="sidebar-item block p-3 rounded-lg text-gray-700 hover:text-indigo-600">
+                        <i class="fas fa-cog w-5 mr-3"></i>
+                        飞书配置
+                    </a>
+                    <a href="#" onclick="showSection('data')" class="sidebar-item block p-3 rounded-lg text-gray-700 hover:text-indigo-600">
+                        <i class="fas fa-database w-5 mr-3"></i>
+                        数据管理
+                    </a>
+                    <a href="#" onclick="showSection('logs')" class="sidebar-item block p-3 rounded-lg text-gray-700 hover:text-indigo-600">
+                        <i class="fas fa-list-alt w-5 mr-3"></i>
+                        同步日志
+                    </a>
+                    <a href="#" onclick="showSection('help')" class="sidebar-item block p-3 rounded-lg text-gray-700 hover:text-indigo-600">
+                        <i class="fas fa-question-circle w-5 mr-3"></i>
+                        帮助文档
+                    </a>
+                </nav>
+            </div>
+
+            <!-- 底部信息 -->
+            <div class="absolute bottom-0 w-64 p-6 border-t border-gray-200">
+                <div class="text-center">
+                    <div class="text-sm text-gray-600 mb-2">系统状态</div>
+                    <div class="flex items-center justify-center gap-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full status-indicator"></div>
+                        <span class="text-xs text-gray-700" id="systemStatus">运行中</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="flex-1 p-8 overflow-auto">
+            <!-- 仪表板部分 -->
+            <div id="dashboard-section" class="section">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-2">📊 系统仪表板</h2>
+                    <p class="text-white/80">飞书集成系统运行状态和数据概览</p>
+                </div>
+
+                <!-- 状态卡片 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="glass-effect rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600"></i>
+                            </div>
+                            <span class="text-xs text-gray-500">实时</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800" id="totalSubmissions">0</div>
+                        <div class="text-sm text-gray-600">总留言数</div>
+                    </div>
+
+                    <div class="glass-effect rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-cloud-upload-alt text-green-600"></i>
+                            </div>
+                            <span class="text-xs text-gray-500" id="syncStatus">⚠️</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800" id="syncedCount">0</div>
+                        <div class="text-sm text-gray-600">已同步到飞书</div>
+                    </div>
+
+                    <div class="glass-effect rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar-day text-purple-600"></i>
+                            </div>
+                            <span class="text-xs text-gray-500">今日</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800" id="todayCount">0</div>
+                        <div class="text-sm text-gray-600">今日留言</div>
+                    </div>
+
+                    <div class="glass-effect rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-clock text-orange-600"></i>
+                            </div>
+                            <span class="text-xs text-gray-500">等待</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800" id="pendingCount">0</div>
+                        <div class="text-sm text-gray-600">待处理</div>
+                    </div>
+                </div>
+
+                <!-- 快速操作 -->
+                <div class="glass-effect rounded-xl p-6 mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">🚀 快速操作</h3>
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="testFeishuConnection()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-link mr-2"></i>测试连接
+                        </button>
+                        <button onclick="syncAllData()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                            <i class="fas fa-sync mr-2"></i>同步所有数据
+                        </button>
+                        <button onclick="openFeishuTable()" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors">
+                            <i class="fas fa-external-link-alt mr-2"></i>打开飞书表格
+                        </button>
+                        <button onclick="exportData()" class="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors">
+                            <i class="fas fa-download mr-2"></i>导出数据
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 最近活动 -->
+                <div class="glass-effect rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">📝 最近留言</h3>
+                    <div id="recentSubmissions" class="space-y-3">
+                        <p class="text-gray-500 text-center py-8">加载中...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 配置部分 -->
+            <div id="config-section" class="section hidden">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-2">⚙️ 飞书配置</h2>
+                    <p class="text-white/80">配置飞书应用和多维表格连接信息</p>
+                </div>
+
+                <div class="glass-effect rounded-xl p-8">
+                    <form id="configForm" class="space-y-6">
+                        <!-- 基础配置 -->
+                        <div class="border-b border-gray-200 pb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-rocket mr-2 text-indigo-600"></i>基础配置
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        应用ID (App ID) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="appId" name="appId" required
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                           placeholder="cli_xxxxxxxxxxxxxxxx">
+                                    <p class="mt-1 text-xs text-gray-500">在飞书开发者后台获取</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        应用密钥 (App Secret) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="password" id="appSecret" name="appSecret" required
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                           placeholder="请输入应用密钥">
+                                    <p class="mt-1 text-xs text-gray-500">请妥善保管，不要泄露</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 表格配置 -->
+                        <div class="border-b border-gray-200 pb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-table mr-2 text-green-600"></i>多维表格配置
+                            </h3>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        多维表格链接 <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="url" id="bitableUrl" name="bitableUrl" required
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                           placeholder="https://xxxxxxxx.feishu.cn/base/xxxxxxxxxxxxxxx">
+                                    <p class="mt-1 text-xs text-gray-500">从飞书多维表格中复制链接</p>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            表格ID (Table ID) <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="text" id="tableId" name="tableId" required
+                                               class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                               placeholder="tblxxxxxxxxxxxxxxx">
+                                        <p class="mt-1 text-xs text-gray-500">通常以 tbl 开头</p>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            视图ID (View ID)
+                                        </label>
+                                        <input type="text" id="viewId" name="viewId"
+                                               class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                               placeholder="vewxxxxxxxxxxxxxxx">
+                                        <p class="mt-1 text-xs text-gray-500">通常以 vew 开头（可选）</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 高级配置 -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-sliders-h mr-2 text-purple-600"></i>高级配置
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        同步间隔（秒）
+                                    </label>
+                                    <input type="number" id="syncInterval" name="syncInterval" min="30" max="3600"
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                           value="300">
+                                    <p class="mt-1 text-xs text-gray-500">自动同步间隔时间</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        重试次数
+                                    </label>
+                                    <input type="number" id="retryCount" name="retryCount" min="1" max="10"
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                           value="3">
+                                    <p class="mt-1 text-xs text-gray-500">同步失败时的重试次数</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 操作按钮 -->
+                        <div class="flex gap-4 pt-6">
+                            <button type="submit" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors">
+                                <i class="fas fa-save mr-2"></i>保存配置
+                            </button>
+                            <button type="button" onclick="testConfig()" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors">
+                                <i class="fas fa-vial mr-2"></i>测试配置
+                            </button>
+                            <button type="button" onclick="resetConfig()" class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-undo mr-2"></i>重置配置
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 配置向导 -->
+                <div class="glass-effect rounded-xl p-6 mt-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-magic mr-2 text-indigo-600"></i>配置向导
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="text-center p-4 border border-gray-200 rounded-lg">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-blue-600 font-bold">1</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">创建飞书应用</h4>
+                            <p class="text-sm text-gray-600">在飞书开发者后台创建应用并获取凭证</p>
+                            <button onclick="window.open('https://open.feishu.cn/app', '_blank')"
+                                    class="mt-3 text-blue-600 text-sm hover:underline">
+                                前往创建 →
+                            </button>
+                        </div>
+
+                        <div class="text-center p-4 border border-gray-200 rounded-lg">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-green-600 font-bold">2</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">创建多维表格</h4>
+                            <p class="text-sm text-gray-600">在飞书中创建多维表格并设计字段结构</p>
+                            <button onclick="window.open('https://feishu.cn', '_blank')"
+                                    class="mt-3 text-green-600 text-sm hover:underline">
+                                前往创建 →
+                            </button>
+                        </div>
+
+                        <div class="text-center p-4 border border-gray-200 rounded-lg">
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-purple-600 font-bold">3</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">配置连接</h4>
+                            <p class="text-sm text-gray-600">在本页面填写配置信息并测试连接</p>
+                            <button onclick="showSection('config')"
+                                    class="mt-3 text-purple-600 text-sm hover:underline">
+                                开始配置 →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据管理部分 -->
+            <div id="data-section" class="section hidden">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-2">💾 数据管理</h2>
+                    <p class="text-white/80">查看、管理和导出所有留言数据</p>
+                </div>
+
+                <!-- 数据统计 -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="glass-effect rounded-xl p-6 text-center">
+                        <div class="text-3xl font-bold text-blue-600" id="statTotal">0</div>
+                        <div class="text-sm text-gray-600">总数据量</div>
+                    </div>
+                    <div class="glass-effect rounded-xl p-6 text-center">
+                        <div class="text-3xl font-bold text-green-600" id="statSynced">0</div>
+                        <div class="text-sm text-gray-600">已同步</div>
+                    </div>
+                    <div class="glass-effect rounded-xl p-6 text-center">
+                        <div class="text-3xl font-bold text-orange-600" id="statPending">0</div>
+                        <div class="text-sm text-gray-600">待同步</div>
+                    </div>
+                    <div class="glass-effect rounded-xl p-6 text-center">
+                        <div class="text-3xl font-bold text-red-600" id="statFailed">0</div>
+                        <div class="text-sm text-gray-600">同步失败</div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="glass-effect rounded-xl p-6 mb-6">
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="refreshData()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                            <i class="fas fa-refresh mr-2"></i>刷新数据
+                        </button>
+                        <button onclick="syncPendingData()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                            <i class="fas fa-cloud-upload-alt mr-2"></i>同步待处理数据
+                        </button>
+                        <button onclick="exportAllData()" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600">
+                            <i class="fas fa-download mr-2"></i>导出所有数据
+                        </button>
+                        <button onclick="clearAllData()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                            <i class="fas fa-trash mr-2"></i>清空所有数据
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 数据列表 -->
+                <div class="glass-effect rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 数据列表</h3>
+                    <div id="dataList" class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-2 px-4">ID</th>
+                                    <th class="text-left py-2 px-4">姓名</th>
+                                    <th class="text-left py-2 px-4">手机</th>
+                                    <th class="text-left py-2 px-4">时间</th>
+                                    <th class="text-left py-2 px-4">状态</th>
+                                    <th class="text-left py-2 px-4">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-8 text-gray-500">加载中...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 日志部分 -->
+            <div id="logs-section" class="section hidden">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-2">📝 同步日志</h2>
+                    <p class="text-white/80">查看系统运行和同步操作日志</p>
+                </div>
+
+                <div class="glass-effect rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">系统日志</h3>
+                        <div class="flex gap-2">
+                            <button onclick="clearLogs()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm">
+                                <i class="fas fa-trash mr-2"></i>清空日志
+                            </button>
+                            <button onclick="exportLogs()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm">
+                                <i class="fas fa-download mr-2"></i>导出日志
+                            </button>
+                        </div>
+                    </div>
+                    <div id="logsContainer" class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-96 overflow-y-auto">
+                        <div>系统启动中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 帮助部分 -->
+            <div id="help-section" class="section hidden">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-2">❓ 帮助文档</h2>
+                    <p class="text-white/80">使用指南和常见问题解答</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 快速开始 -->
+                    <div class="glass-effect rounded-xl p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                            <i class="fas fa-rocket mr-2 text-blue-600"></i>快速开始
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3">
+                                <span class="text-blue-600 font-bold">1.</span>
+                                <div>
+                                    <p class="font-medium">创建飞书应用</p>
+                                    <p class="text-sm text-gray-600">在飞书开发者后台创建应用并获取凭证</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-blue-600 font-bold">2.</span>
+                                <div>
+                                    <p class="font-medium">配置权限</p>
+                                    <p class="text-sm text-gray-600">添加多维表格相关权限并发布应用</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-blue-600 font-bold">3.</span>
+                                <div>
+                                    <p class="font-medium">创建表格</p>
+                                    <p class="text-sm text-gray-600">在飞书中创建多维表格并设计字段</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-blue-600 font-bold">4.</span>
+                                <div>
+                                    <p class="font-medium">配置连接</p>
+                                    <p class="text-sm text-gray-600">在管理后台填写配置信息</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 常见问题 -->
+                    <div class="glass-effect rounded-xl p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                            <i class="fas fa-question-circle mr-2 text-green-600"></i>常见问题
+                        </h3>
+                        <div class="space-y-4">
+                            <details class="border-l-4 border-blue-500 pl-4">
+                                <summary class="font-medium cursor-pointer">连接测试失败怎么办？</summary>
+                                <p class="mt-2 text-sm text-gray-600">
+                                    检查应用ID和密钥是否正确，确认应用已通过审核，权限配置是否完整。
+                                </p>
+                            </details>
+                            <details class="border-l-4 border-blue-500 pl-4">
+                                <summary class="font-medium cursor-pointer">数据没有同步到飞书？</summary>
+                                <p class="mt-2 text-sm text-gray-600">
+                                    检查表格ID是否正确，确认表格分享权限，查看同步日志获取详细错误信息。
+                                </p>
+                            </details>
+                            <details class="border-l-4 border-blue-500 pl-4">
+                                <summary class="font-medium cursor-pointer">如何获取表格ID？</summary>
+                                <p class="mt-2 text-sm text-gray-600">
+                                    在飞书多维表格页面，按F12打开开发者工具，在Console中执行相关代码获取ID。
+                                </p>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 联系支持 -->
+                <div class="glass-effect rounded-xl p-6 mt-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-headset mr-2 text-purple-600"></i>技术支持
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-book text-purple-600 text-2xl"></i>
+                            </div>
+                            <h4 class="font-semibold mb-2">文档中心</h4>
+                            <p class="text-sm text-gray-600">查看详细的使用文档</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-comments text-blue-600 text-2xl"></i>
+                            </div>
+                            <h4 class="font-semibold mb-2">在线支持</h4>
+                            <p class="text-sm text-gray-600">获取技术帮助和支持</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-video text-green-600 text-2xl"></i>
+                            </div>
+                            <h4 class="font-semibold mb-2">视频教程</h4>
+                            <p class="text-sm text-gray-600">观看配置和操作视频</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示消息 -->
+    <div id="toast" class="fixed top-4 right-4 hidden z-50">
+        <div class="bg-white rounded-lg shadow-lg p-4 flex items-center gap-3 min-w-[300px]">
+            <div id="toastIcon"></div>
+            <div>
+                <div id="toastTitle" class="font-semibold text-gray-800"></div>
+                <div id="toastMessage" class="text-sm text-gray-600"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局配置和状态
+        let feishuConfig = {
+            appId: '',
+            appSecret: '',
+            bitableUrl: '',
+            tableId: '',
+            viewId: '',
+            syncInterval: 300,
+            retryCount: 3,
+            tenantAccessToken: ''
+        };
+
+        let systemLogs = [];
+        let currentSection = 'dashboard';
+
+        // 初始化
+        window.addEventListener('load', function() {
+            loadConfig();
+            updateDashboard();
+            addLog('系统启动', 'info');
+            startAutoSync();
+        });
+
+        // 显示不同的页面部分
+        function showSection(section) {
+            // 隐藏所有部分
+            document.querySelectorAll('.section').forEach(el => {
+                el.classList.add('hidden');
+            });
+
+            // 显示选中的部分
+            document.getElementById(`${section}-section`).classList.remove('hidden');
+            currentSection = section;
+
+            // 更新侧边栏高亮
+            document.querySelectorAll('.sidebar-item').forEach(el => {
+                el.classList.remove('bg-indigo-50', 'text-indigo-600', 'border-l-4', 'border-indigo-600');
+            });
+            event.target.closest('.sidebar-item').classList.add('bg-indigo-50', 'text-indigo-600', 'border-l-4', 'border-indigo-600');
+
+            // 特定页面的初始化
+            if (section === 'data') {
+                loadDataList();
+            } else if (section === 'logs') {
+                displayLogs();
+            }
+        }
+
+        // 配置管理
+        function loadConfig() {
+            const saved = localStorage.getItem('feishuConfig');
+            if (saved) {
+                feishuConfig = { ...feishuConfig, ...JSON.parse(saved) };
+                updateConfigForm();
+                addLog('配置已加载', 'success');
+            } else {
+                addLog('未找到配置信息', 'warning');
+            }
+        }
+
+        function updateConfigForm() {
+            document.getElementById('appId').value = feishuConfig.appId;
+            document.getElementById('appSecret').value = feishuConfig.appSecret;
+            document.getElementById('bitableUrl').value = feishuConfig.bitableUrl;
+            document.getElementById('tableId').value = feishuConfig.tableId;
+            document.getElementById('viewId').value = feishuConfig.viewId;
+            document.getElementById('syncInterval').value = feishuConfig.syncInterval;
+            document.getElementById('retryCount').value = feishuConfig.retryCount;
+        }
+
+        // 保存配置
+        document.getElementById('configForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            feishuConfig = {
+                appId: document.getElementById('appId').value,
+                appSecret: document.getElementById('appSecret').value,
+                bitableUrl: document.getElementById('bitableUrl').value,
+                tableId: document.getElementById('tableId').value,
+                viewId: document.getElementById('viewId').value,
+                syncInterval: parseInt(document.getElementById('syncInterval').value),
+                retryCount: parseInt(document.getElementById('retryCount').value)
+            };
+
+            localStorage.setItem('feishuConfig', JSON.stringify(feishuConfig));
+            showToast('success', '配置已保存', '飞书配置信息已成功保存');
+            addLog('配置已更新', 'success');
+            updateDashboard();
+        });
+
+        // 测试配置
+        async function testConfig() {
+            if (!feishuConfig.appId || !feishuConfig.appSecret) {
+                showToast('error', '配置不完整', '请先填写应用ID和密钥');
+                return;
+            }
+
+            showToast('info', '正在测试', '测试飞书连接...');
+            addLog('开始测试飞书连接', 'info');
+
+            try {
+                const accessToken = await getTenantAccessToken();
+                showToast('success', '连接成功', '飞书连接测试通过');
+                addLog('飞书连接测试成功', 'success');
+            } catch (error) {
+                showToast('error', '连接失败', error.message);
+                addLog(`飞书连接测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 测试飞书连接
+        async function testFeishuConnection() {
+            await testConfig();
+        }
+
+        // 获取租户访问令牌
+        async function getTenantAccessToken() {
+            const response = await fetch('https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    app_id: feishuConfig.appId,
+                    app_secret: feishuConfig.appSecret
+                })
+            });
+
+            const data = await response.json();
+            if (data.code === 0) {
+                return data.tenant_access_token;
+            } else {
+                throw new Error(`获取访问令牌失败: ${data.msg}`);
+            }
+        }
+
+        // 同步所有数据
+        async function syncAllData() {
+            showToast('info', '同步中', '正在同步所有数据到飞书...');
+            addLog('开始批量同步数据', 'info');
+
+            const submissions = JSON.parse(localStorage.getItem('contactSubmissions') || '[]');
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const submission of submissions) {
+                try {
+                    await syncToFeishu(submission);
+                    successCount++;
+                } catch (error) {
+                    failCount++;
+                    addLog(`同步失败: ${submission.name} - ${error.message}`, 'error');
+                }
+            }
+
+            showToast('success', '同步完成', `成功同步 ${successCount} 条，失败 ${failCount} 条`);
+            addLog(`批量同步完成: 成功 ${successCount}，失败 ${failCount}`, 'success');
+            updateDashboard();
+        }
+
+        // 同步单条数据到飞书
+        async function syncToFeishu(submission) {
+            const accessToken = await getTenantAccessToken();
+
+            // 解析appToken
+            const urlMatch = feishuConfig.bitableUrl.match(/base\/([a-zA-Z0-9]+)/);
+            if (!urlMatch) {
+                throw new Error('无效的飞书表格链接');
+            }
+            const appToken = urlMatch[1];
+
+            const recordData = {
+                fields: {
+                    "姓名": submission.name,
+                    "手机号": submission.phone,
+                    "留言内容": submission.message,
+                    "提交时间": submission.timestamp,
+                    "状态": "待处理",
+                    "来源": "官网表单"
+                }
+            };
+
+            const response = await fetch(`https://open.feishu.cn/open-apis/bitable/v1/apps/${appToken}/tables/${feishuConfig.tableId}/records`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(recordData)
+            });
+
+            const result = await response.json();
+            if (result.code !== 0) {
+                throw new Error(`添加记录失败: ${result.msg}`);
+            }
+
+            return result.data;
+        }
+
+        // 更新仪表板
+        function updateDashboard() {
+            const submissions = JSON.parse(localStorage.getItem('contactSubmissions') || '[]');
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            const todayCount = submissions.filter(item => {
+                const itemDate = new Date(item.timestamp.replace(/\//g, '-'));
+                return itemDate >= today;
+            }).length;
+
+            document.getElementById('totalSubmissions').textContent = submissions.length;
+            document.getElementById('syncedCount').textContent = submissions.length; // 假设都已同步
+            document.getElementById('todayCount').textContent = todayCount;
+            document.getElementById('pendingCount').textContent = submissions.filter(s => s.status === 'pending').length;
+
+            // 更新系统状态
+            const isConfigured = feishuConfig.appId && feishuConfig.appSecret && feishuConfig.tableId;
+            document.getElementById('syncStatus').textContent = isConfigured ? '✅' : '⚠️';
+            document.getElementById('systemStatus').textContent = isConfigured ? '已配置' : '未配置';
+
+            // 显示最近留言
+            displayRecentSubmissions(submissions.slice(-5).reverse());
+        }
+
+        // 显示最近留言
+        function displayRecentSubmissions(submissions) {
+            const container = document.getElementById('recentSubmissions');
+
+            if (submissions.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">暂无留言记录</p>';
+                return;
+            }
+
+            container.innerHTML = submissions.map((item, index) => `
+                <div class="bg-white rounded-lg p-4 border border-gray-200">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">#${index + 1}</span>
+                            <span class="font-semibold">${item.name}</span>
+                            <span class="text-gray-600">${item.phone}</span>
+                        </div>
+                        <span class="text-xs text-gray-500">${item.timestamp}</span>
+                    </div>
+                    <div class="text-gray-700 text-sm">${item.message.substring(0, 100)}${item.message.length > 100 ? '...' : ''}</div>
+                </div>
+            `).join('');
+        }
+
+        // 数据管理功能
+        function loadDataList() {
+            const submissions = JSON.parse(localStorage.getItem('contactSubmissions') || '[]');
+            const tbody = document.getElementById('dataTableBody');
+
+            if (submissions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">暂无数据</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = submissions.slice().reverse().map((item, index) => `
+                <tr class="border-b border-gray-100">
+                    <td class="py-2 px-4">${item.id}</td>
+                    <td class="py-2 px-4">${item.name}</td>
+                    <td class="py-2 px-4">${item.phone}</td>
+                    <td class="py-2 px-4">${item.timestamp}</td>
+                    <td class="py-2 px-4">
+                        <span class="px-2 py-1 text-xs rounded-full ${
+                            item.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            item.status === 'synced' ? 'bg-green-100 text-green-800' :
+                            'bg-gray-100 text-gray-800'
+                        }">${item.status}</span>
+                    </td>
+                    <td class="py-2 px-4">
+                        <button onclick="deleteData(${item.id})" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // 更新统计数据
+            document.getElementById('statTotal').textContent = submissions.length;
+            document.getElementById('statSynced').textContent = submissions.filter(s => s.status === 'synced').length;
+            document.getElementById('statPending').textContent = submissions.filter(s => s.status === 'pending').length;
+            document.getElementById('statFailed').textContent = submissions.filter(s => s.status === 'failed').length;
+        }
+
+        function deleteData(id) {
+            if (confirm('确定要删除这条记录吗？')) {
+                const submissions = JSON.parse(localStorage.getItem('contactSubmissions') || '[]');
+                const filtered = submissions.filter(item => item.id !== id);
+                localStorage.setItem('contactSubmissions', JSON.stringify(filtered));
+                loadDataList();
+                updateDashboard();
+                showToast('success', '删除成功', '记录已删除');
+                addLog(`删除记录 ID: ${id}`, 'info');
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('确定要清空所有数据吗？此操作不可恢复！')) {
+                localStorage.removeItem('contactSubmissions');
+                loadDataList();
+                updateDashboard();
+                showToast('success', '清空成功', '所有数据已清空');
+                addLog('清空所有数据', 'warning');
+            }
+        }
+
+        // 日志管理
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleString('zh-CN');
+            const logEntry = {
+                timestamp,
+                message,
+                type
+            };
+
+            systemLogs.push(logEntry);
+
+            // 限制日志数量
+            if (systemLogs.length > 1000) {
+                systemLogs = systemLogs.slice(-1000);
+            }
+
+            localStorage.setItem('systemLogs', JSON.stringify(systemLogs));
+
+            // 如果在日志页面，立即显示
+            if (currentSection === 'logs') {
+                displayLogs();
+            }
+        }
+
+        function displayLogs() {
+            const container = document.getElementById('logsContainer');
+            const savedLogs = JSON.parse(localStorage.getItem('systemLogs') || '[]');
+
+            if (savedLogs.length === 0) {
+                container.innerHTML = '<div>暂无日志记录</div>';
+                return;
+            }
+
+            container.innerHTML = savedLogs.map(log => {
+                const color = log.type === 'error' ? 'text-red-400' :
+                             log.type === 'warning' ? 'text-yellow-400' :
+                             log.type === 'success' ? 'text-green-400' :
+                             'text-gray-400';
+
+                return `<div class="${color}">[${log.timestamp}] ${log.message}</div>`;
+            }).join('');
+
+            // 滚动到底部
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearLogs() {
+            if (confirm('确定要清空所有日志吗？')) {
+                systemLogs = [];
+                localStorage.removeItem('systemLogs');
+                displayLogs();
+                showToast('success', '清空成功', '所有日志已清空');
+            }
+        }
+
+        function exportLogs() {
+            const logs = JSON.parse(localStorage.getItem('systemLogs') || '[]');
+            const logText = logs.map(log => `[${log.timestamp}] [${log.type.toUpperCase()}] ${log.message}`).join('\n');
+
+            const blob = new Blob([logText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `系统日志_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showToast('success', '导出成功', '日志文件已导出');
+        }
+
+        // 导出数据
+        function exportAllData() {
+            const submissions = JSON.parse(localStorage.getItem('contactSubmissions') || '[]');
+
+            if (submissions.length === 0) {
+                showToast('warning', '无数据', '暂无数据可导出');
+                return;
+            }
+
+            const exportData = {
+                exportTime: new Date().toISOString(),
+                totalCount: submissions.length,
+                submissions: submissions
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `客户留言数据_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showToast('success', '导出成功', `已导出 ${submissions.length} 条数据`);
+            addLog(`导出数据: ${submissions.length} 条记录`, 'info');
+        }
+
+        // 工具函数
+        function refreshData() {
+            loadDataList();
+            updateDashboard();
+            showToast('success', '刷新成功', '数据已更新');
+        }
+
+        function openFeishuTable() {
+            if (feishuConfig.bitableUrl) {
+                window.open(feishuConfig.bitableUrl, '_blank');
+            } else {
+                showToast('warning', '未配置', '请先配置飞书表格链接');
+            }
+        }
+
+        function syncPendingData() {
+            syncAllData();
+        }
+
+        function resetConfig() {
+            if (confirm('确定要重置所有配置吗？')) {
+                localStorage.removeItem('feishuConfig');
+                feishuConfig = {
+                    appId: '',
+                    appSecret: '',
+                    bitableUrl: '',
+                    tableId: '',
+                    viewId: '',
+                    syncInterval: 300,
+                    retryCount: 3
+                };
+                updateConfigForm();
+                showToast('success', '重置成功', '配置已重置为默认值');
+                addLog('配置已重置', 'warning');
+            }
+        }
+
+        // Toast 提示
+        function showToast(type, title, message) {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastTitle = document.getElementById('toastTitle');
+            const toastMessage = document.getElementById('toastMessage');
+
+            const icons = {
+                success: '<i class="fas fa-check-circle text-green-500"></i>',
+                error: '<i class="fas fa-exclamation-circle text-red-500"></i>',
+                warning: '<i class="fas fa-exclamation-triangle text-yellow-500"></i>',
+                info: '<i class="fas fa-info-circle text-blue-500"></i>'
+            };
+
+            toastIcon.innerHTML = icons[type];
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+
+            toast.classList.remove('hidden');
+
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // 自动同步
+        function startAutoSync() {
+            setInterval(() => {
+                if (feishuConfig.appId && feishuConfig.appSecret) {
+                    // 检查是否有待同步的数据
+                    const pending = JSON.parse(localStorage.getItem('contactSubmissions') || '[]')
+                        .filter(s => s.status === 'pending');
+
+                    if (pending.length > 0) {
+                        addLog(`自动同步: 发现 ${pending.length} 条待同步数据`, 'info');
+                        syncAllData();
+                    }
+                }
+            }, feishuConfig.syncInterval * 1000);
+        }
+    </script>
+</body>
+</html>
