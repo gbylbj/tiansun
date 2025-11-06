@@ -1,19 +1,10 @@
 {
   "version": 2,
   "name": "tian-sun-bamboo-shoots",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build"
-      }
-    }
-  ],
+  "framework": "create-react-app",
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run build:prod",
   "outputDirectory": "build",
-  "framework": "create-react-app",
   "rewrites": [
     {
       "source": "/(.*)",
