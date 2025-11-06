@@ -14,10 +14,11 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:prod": "react-scripts build --legacy-peer-deps",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "optimize-images": "node scripts/optimize-images.js",
-    "build:optimized": "npm run optimize-images && npm run build"
+    "build:optimized": "npm run optimize-images && npm run build:prod"
   },
   "eslintConfig": {
     "extends": [
